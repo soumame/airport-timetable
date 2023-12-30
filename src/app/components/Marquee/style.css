@@ -1,0 +1,13 @@
+.Marquee {
+  position: relative;
+}
+
+.MarqueeWidthExtract {
+  visibility: hidden;
+  white-space: nowrap;
+  position: absolute;
+}
+
+.MarqueeText {
+  white-space: nowrap;
+}
