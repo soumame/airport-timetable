@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import { Table } from "@radix-ui/themes";
 import { readFileSync } from "fs";
