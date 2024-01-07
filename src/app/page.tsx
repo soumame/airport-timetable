@@ -1,15 +1,29 @@
 "use client";
-import React, { useState, useEffect } from "react";
 import { Table } from "@radix-ui/themes";
-import { readFileSync } from "fs";
-import { parse, format } from "date-fns";
+import { parse, getTime } from "date-fns";
+import { format, formatInTimeZone } from "date-fns-tz";
 
 import { OriginalData } from "./types";
 
 export default async function Home() {
-  const url =
-    "https://tokyo-haneda.com/app_resource/flight/data/int/hdacfdep.json";
-  const response = await fetch(url);
+  const currentTimestamp = getTime(new Date());
+  const currentTime = format(new Date(), "yyyy-MM-dd HH:mm:ss zzz");
+  const currentTimeInUNIX = new Date();
+  const JapanTZ = formatInTimeZone(
+    currentTimeInUNIX,
+    "Asia/Tokyo",
+    "yyyy-MM-dd HH:mm:ss zzz"
+  );
+
+  const url = `https://tokyo-haneda.com/app_resource/flight/data/int/hdacfdep.json?${currentTimestamp}`;
+  const companyUrl =
+    "https://tokyo-haneda.com/site_resource/flight/data/int/company_list_search.json";
+  const citylist =
+    "https://tokyo-haneda.com/site_resource/flight/data/int/city_list.json";
+
+  const response = await fetch(url, {
+    mode: "no-cors", // no-cors モードを設定
+  });
   // レスポンスをチェック
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -54,6 +68,11 @@ export default async function Home() {
   });
   return (
     <div>
+      <div className="bg-gray-700 py-4 text-white border-b border-gray-400">
+        更新時刻:{JapanTZ}
+        <br />
+        現地時刻:{currentTime}
+      </div>
       <Table.Root>
         <Table.Header className="bg-gray-700 h-14 ">
           <Table.Row>
