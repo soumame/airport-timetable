@@ -1,7 +1,7 @@
 "use client";
 import { Table } from "@radix-ui/themes";
 import { parse, getTime } from "date-fns";
-import { format, formatInTimeZone } from "date-fns-tz";
+import { format, formatInTimeZone, utcToZonedTime } from "date-fns-tz";
 
 import { OriginalData } from "./types";
 
@@ -9,11 +9,12 @@ export default async function Home() {
   const currentTimestamp = getTime(new Date());
   const currentTime = format(new Date(), "yyyy-MM-dd HH:mm:ss zzz");
   const currentTimeInUNIX = new Date();
-  const JapanTZ = formatInTimeZone(
+  const JapanTimeString = formatInTimeZone(
     currentTimeInUNIX,
     "Asia/Tokyo",
-    "yyyy-MM-dd HH:mm:ss zzz"
+    "yyyy-MM-dd HH:mm:ss"
   );
+  const japanDate = utcToZonedTime(currentTimeInUNIX, "Asia/Tokyo");
 
   const url = `https://tokyo-haneda.com/app_resource/flight/data/int/hdacfdep.json?${currentTimestamp}`;
   const companyUrl =
@@ -54,24 +55,29 @@ export default async function Home() {
     };
   });
 
-  // 現在の日時を取得
-  const now = new Date();
-
   // 現在時刻以降のフライト情報のみをフィルタリング
   const futureFlights = processedData.filter((flight) => {
+    // 現在の日時を取得
+    const now = new Date();
+    //'date-fns' を使用して日付を解析
     const scheduledTime = parse(
       flight.ScheduledTime.trim(),
       "yyyy/MM/dd HH:mm:ss",
-      new Date()
+      now
     );
-    return scheduledTime >= now;
+
+    //出発済みフライトは除外
+    return scheduledTime >= japanDate && flight.RemarksJP !== "出発済み";
   });
+
   return (
     <div>
       <div className="bg-gray-700 py-4 text-white border-b border-gray-400">
-        更新時刻:{JapanTZ}
+        更新時刻:{JapanTimeString}
         <br />
         現地時刻:{currentTime}
+        <br />
+        出発済みフライト・時刻を過ぎたフライトは除外
       </div>
       <Table.Root>
         <Table.Header className="bg-gray-700 h-14 ">
@@ -113,6 +119,8 @@ export default async function Home() {
 
             // 時刻のみをフォーマット
             const ProcessedScheduledTime = format(parsedSchedule, "HH:mm");
+            const ProcessedScheduledDate = format(parsedSchedule, "dd");
+
             const ProcessedChangedTime =
               flightInfo.ChangedTime.trim() === ""
                 ? null
@@ -137,6 +145,8 @@ export default async function Home() {
               >
                 <Table.RowHeaderCell className="text-3xl text-white">
                   {ProcessedScheduledTime}
+                  <br />
+                  <p className="text-xs">{ProcessedScheduledDate}</p>
                 </Table.RowHeaderCell>
                 <Table.Cell className="text-2xl text-yellow-300">
                   {ProcessedChangedTime}
