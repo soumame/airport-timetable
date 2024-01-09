@@ -4,83 +4,79 @@ import { Table } from "@radix-ui/themes";
 import { parse, getTime } from "date-fns";
 import { format, formatInTimeZone, utcToZonedTime } from "date-fns-tz";
 
-import { OriginalData, ProcessedFlightInfo } from "./types";
+import { OriginalData } from "./types";
 
-export default function Home() {
-  const [futureFlights, setFutureFlights] = useState<ProcessedFlightInfo[]>([]);
-  useEffect(() => {
-    const fetchData = async () => {
-      const currentTimestamp = getTime(new Date());
-      const currentTime = format(new Date(), "yyyy-MM-dd HH:mm:ss zzz");
-      const currentTimeInUNIX = new Date();
-      const JapanTimeString = formatInTimeZone(
-        currentTimeInUNIX,
-        "Asia/Tokyo",
-        "yyyy-MM-dd HH:mm:ss"
-      );
-      const japanDate = utcToZonedTime(currentTimeInUNIX, "Asia/Tokyo");
+export default async function Home() {
+  const currentTimestamp = getTime(new Date());
+  const currentTime = format(new Date(), "yyyy-MM-dd HH:mm:ss zzz");
+  const currentTimeInUNIX = new Date();
+  const JapanTimeString = formatInTimeZone(
+    currentTimeInUNIX,
+    "Asia/Tokyo",
+    "yyyy-MM-dd HH:mm:ss"
+  );
+  const japanDate = utcToZonedTime(currentTimeInUNIX, "Asia/Tokyo");
 
-      const url = `https://tokyo-haneda.com/app_resource/flight/data/int/hdacfdep.json?${currentTimestamp}`;
+  const url = `https://tokyo-haneda.com/app_resource/flight/data/int/hdacfdep.json?${currentTimestamp}`;
+  const companyUrl =
+    "https://tokyo-haneda.com/site_resource/flight/data/int/company_list_search.json";
+  const citylist =
+    "https://tokyo-haneda.com/site_resource/flight/data/int/city_list.json";
 
-      try {
-        const response = await fetch(url, {
-          mode: "no-cors", //cors モードを設定
-        });
+  const response = await fetch(url, {
+    mode: "cors", // no-cors モードを設定
+  });
+  // レスポンスをチェック
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+  // レスポンスをJSONとしてパース
+  const data: OriginalData = await response.json();
 
-        const data: OriginalData = await response.json();
-        const processedData = data.flight_info.map((flight) => {
-          return {
-            airlines: flight.航空会社.map((airline) => ({
-              ALCode: airline.ＡＬコード,
-              ALNameJP: airline.ＡＬ和名称,
-              ALNameEN: airline.ＡＬ英名称,
-              FlightNumber: airline.便名,
-            })),
-            DestinationAirportCode: flight.行先地空港コード,
-            DestinationAirportNameJP: flight.行先地空港和名称,
-            DestinationAirportNameEN: flight.行先地空港英名称,
-            ScheduledTime: flight.定刻,
-            ChangedTime: flight.変更時刻,
-            TerminalDivision: flight.ターミナル区分,
-            GateNumberCode: flight.ゲート番号コード,
-            AircraftTypeCode: flight.機種コード,
-            CheckinCounter: flight.チェックインカウンター番号,
-            RemarksJP: flight.備考和名称,
-            RemarksEN: flight.備考英名称,
-          };
-        });
-
-        // 現在時刻以降のフライト情報のみをフィルタリング
-        const futureFlights = processedData.filter((flight) => {
-          // 現在の日時を取得
-          const now = new Date();
-          //'date-fns' を使用して日付を解析
-          const scheduledTime = parse(
-            flight.ScheduledTime.trim(),
-            "yyyy/MM/dd HH:mm:ss",
-            now
-          );
-
-          //出発済みフライトは除外
-          return scheduledTime >= japanDate && flight.RemarksJP !== "出発済み";
-        });
-        console.log(response, "response");
-
-        setFutureFlights(futureFlights); // 状態を更新
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      }
+  const processedData = data.flight_info.map((flight) => {
+    return {
+      airlines: flight.航空会社.map((airline) => ({
+        ALCode: airline.ＡＬコード,
+        ALNameJP: airline.ＡＬ和名称,
+        ALNameEN: airline.ＡＬ英名称,
+        FlightNumber: airline.便名,
+      })),
+      DestinationAirportCode: flight.行先地空港コード,
+      DestinationAirportNameJP: flight.行先地空港和名称,
+      DestinationAirportNameEN: flight.行先地空港英名称,
+      ScheduledTime: flight.定刻,
+      ChangedTime: flight.変更時刻,
+      TerminalDivision: flight.ターミナル区分,
+      GateNumberCode: flight.ゲート番号コード,
+      AircraftTypeCode: flight.機種コード,
+      CheckinCounter: flight.チェックインカウンター番号,
+      RemarksJP: flight.備考和名称,
+      RemarksEN: flight.備考英名称,
     };
+  });
 
-    fetchData(); // マウント時にデータ取得
-  }, []);
+  // 現在時刻以降のフライト情報のみをフィルタリング
+  const futureFlights = processedData.filter((flight) => {
+    // 現在の日時を取得
+    const now = new Date();
+    //'date-fns' を使用して日付を解析
+    const scheduledTime = parse(
+      flight.ScheduledTime.trim(),
+      "yyyy/MM/dd HH:mm:ss",
+      now
+    );
+
+    //出発済みフライトは除外
+    return scheduledTime >= japanDate && flight.RemarksJP !== "出発済み";
+  });
+
   return (
     <div>
       <div className="bg-gray-700 py-4 text-white border-b border-gray-400">
+        更新時刻:{JapanTimeString}
+        <br />
+        現地時刻:{currentTime}
         <br />
         出発済みフライト・時刻を過ぎたフライトは除外
       </div>

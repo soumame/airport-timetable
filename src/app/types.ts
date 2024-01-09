@@ -47,3 +47,25 @@ interface FlightInfo {
 export interface OriginalData {
   flight_info: FlightInfo[];
 }
+
+interface processedAirline {
+  ALCode: string;
+  ALNameJP: string;
+  ALNameEN: string;
+  FlightNumber: string;
+}
+
+export interface ProcessedFlightInfo {
+  airlines: processedAirline[];
+  DestinationAirportCode: string;
+  DestinationAirportNameJP: string;
+  DestinationAirportNameEN: string;
+  ScheduledTime: string;
+  ChangedTime: string;
+  TerminalDivision: string;
+  GateNumberCode: string;
+  AircraftTypeCode: string;
+  CheckinCounter: string;
+  RemarksJP: string;
+  RemarksEN: string;
+}
