@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.text-container {
+  position: relative;
+}
+
+.text {
+  position: absolute;
+  opacity: 0;
+  animation: alternateText 10s infinite; /* 4秒ごとに繰り返し */
+}
+
+#text1 {
+  animation-delay: 0s; /* 最初のテキストはすぐに表示 */
+}
+
+#text2 {
+  animation-delay: 5s; /* 2秒後に2番目のテキストを表示 */
+}
+
+@keyframes alternateText {
+  0% {
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  .text-container {
+    @apply relative max-w-lg mx-auto; /* コンテナの最大幅と中央配置 */
+  }
+
+  .scroll-text {
+    @apply inline-block;
+    animation: scrollText 10s linear infinite; /* 10秒間の無限スクロール */
+  }
+
+  @keyframes scrollText {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+}

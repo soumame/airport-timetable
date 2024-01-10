@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { parse, getTime } from "date-fns";
 import { format, formatInTimeZone, utcToZonedTime } from "date-fns-tz";
 import { Table } from "@radix-ui/themes";
-
+import "./textmotion.css";
 import { OriginalData, ProcessedFlightInfo } from "./types";
 export default async function HanedaData() {
   const currentTimestamp = getTime(new Date());
@@ -66,14 +66,14 @@ export default async function HanedaData() {
     return scheduledTime >= japanDate && flight.RemarksJP !== "出発済み";
   });
   return (
-    <div>
+    <div className="overflow-scroll flex flex-col w-full">
       <div className="bg-gray-700 py-4 text-white border-b border-gray-400">
         <p>最後に更新した時刻: {currentTime}</p>
         <p>更新時の日本の時刻: {JapanTimeString}</p>
         <br />
         出発済みフライト・時刻を過ぎたフライトは除外します。また、60秒に１度しか更新しません。
         <br />
-        この時刻表が不正確のなのが原因で飛行機に乗り遅れたとしても責任は負いませんよ！この時刻表はあくまで参考程度にしてください。
+        この時刻表が不正確のなのが原因で飛行機に乗り遅れたとしても責任は負いませんよ！この時刻表
       </div>
       <Table.Root>
         <Table.Header className="bg-gray-700 h-14 ">
@@ -90,7 +90,7 @@ export default async function HanedaData() {
             <Table.ColumnHeaderCell className="text-white font-medium text-xl ">
               Flight
             </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="text-white font-medium text-xl ">
+            <Table.ColumnHeaderCell className="text-white font-medium text-xl">
               Checkin
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell className="text-white font-medium text-xl ">
@@ -147,10 +147,14 @@ export default async function HanedaData() {
                 <Table.Cell className="text-2xl text-yellow-300">
                   {ProcessedChangedTime}
                 </Table.Cell>
-                <Table.Cell className="text-2xl text-white">
-                  {flightInfo.DestinationAirportNameJP}
-                  <br />
-                  <p className="text-sm">
+                <Table.Cell
+                  className="text-2xl text-white text-container"
+                  id="text-container"
+                >
+                  <p className="text scroll-text" id="text1">
+                    {flightInfo.DestinationAirportNameJP}
+                  </p>
+                  <p className="text scroll-text" id="text2">
                     {flightInfo.DestinationAirportNameEN}
                   </p>
                 </Table.Cell>
@@ -161,7 +165,7 @@ export default async function HanedaData() {
                     </div>
                   ))}
                 </Table.Cell>
-                <Table.Cell className="text-2xl text-white flex">
+                <Table.Cell className="text-2xl text-white flex flex-wrap w-10">
                   {checkinCounters}
                 </Table.Cell>
                 <Table.Cell className="text-2xl text-white">
