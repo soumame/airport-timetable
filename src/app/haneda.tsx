@@ -19,7 +19,7 @@ export default async function HanedaData() {
 
   const response = await fetch(url, {
     mode: "cors", // no-cors モードを設定
-    next: { revalidate: 1 },
+    next: { revalidate: 60 },
   });
   if (!response.ok) {
     // This will activate the closest `error.js` Error Boundary
@@ -71,7 +71,9 @@ export default async function HanedaData() {
         <p>最後に更新した時刻: {currentTime}</p>
         <p>更新時の日本の時刻: {JapanTimeString}</p>
         <br />
-        出発済みフライト・時刻を過ぎたフライトは除外します。
+        出発済みフライト・時刻を過ぎたフライトは除外します。また、60秒に１度しか更新しません。
+        <br />
+        この時刻表が不正確のなのが原因で飛行機に乗り遅れたとしても責任は負いませんよ！この時刻表はあくまで参考程度にしてください。
       </div>
       <Table.Root>
         <Table.Header className="bg-gray-700 h-14 ">
